@@ -4,7 +4,6 @@ const providerList = ['homestead', 'rinkeby', 'ropsten', 'kovan'];
 const defaultNumberOfAddresses = 10;
 const maxBlocks = 10;
 const blocksTreshold = 1000;
-
 const getProvider = network => {
   if(!network || providerList.indexOf(network) === -1) {
    return ethers.getDefaultProvider('ropsten');
@@ -13,7 +12,11 @@ const getProvider = network => {
   return ethers.getDefaultProvider(network);
 }
 
-const getAddressBlocks = (numberOfAddresses, currentBlock) => {
+const getAddressBlocks = async (numberOfAddresses, network) => {
+  
+  const provider = getProvider(network);
+  const currentBlock = await provider.getBlockNumber();
+
   let numberOfBlocks;
   if(numberOfAddresses < maxBlocks) {
     numberOfBlocks = numberOfAddresses;
@@ -26,20 +29,31 @@ const getAddressBlocks = (numberOfAddresses, currentBlock) => {
   let j = 0;
   for(let i = numberOfBlocks; i > 0; i-- ) {
     const limit = numberOfAddresses - numberOfBlocks > - 1 ? (numberOfAddresses - numberOfBlocks + 1) : 1;
+    const numberOfAddressesInTheBlock = Math.ceil(Math.random() * limit);
+    numberOfAddresses = numberOfAddresses - numberOfAddressesInTheBlock;
+
+    blockIndex = currentBlock - Math.floor(Math.random() * blocksTreshold);
+    // For given blockIndex, check if we have enought transactions to get all the addresses. If not get another block.
     blocks.push({
       addressesPerBlock: Math.ceil(Math.random() * limit),
       blockIndex : j
     });
-    numberOfAddresses = numberOfAddresses - blocks[j].addressesPerBlock;
     j++;
   }
-  blocks.map(block => block.blockIndex = currentBlock - Math.floor(Math.random() * blocksTreshold));
-
+  blocks.map(async block => {
+    block.blockIndex = currentBlock - Math.floor(Math.random() * blocksTreshold);
+    const txs = await provider.getBlock(block.blockIndex);
+    //console.log(txs.transactions);
+    return block;
+  })
+  //blocks.map(block => block.blockIndex = currentBlock - Math.floor(Math.random() * blocksTreshold));
+  
+  
   return blocks;
 }
 
 
-const getAddresses = async (numberOfAddresses = defaultNumberOfAddresses, network = 'ropsten') => {
+const getAddresses =  async (numberOfAddresses = defaultNumberOfAddresses, network = 'ropsten') => {
   if(typeof numberOfAddresses !== 'number' && isNaN(Number(numberOfAddresses))) {
     numberOfAddresses = defaultNumberOfAddresses;
   }
@@ -56,11 +70,12 @@ const getAddresses = async (numberOfAddresses = defaultNumberOfAddresses, networ
   // Based on the number of addresses we randomly choose blocks from which to pick the address
 
   // get current block 
-  const currentBlock = await provider.getBlockNumber();
   
-  const addressBlocks = getAddressBlocks(numberOfAddresses, currentBlock);
-  console.log('We got the provider', currentBlock);
+  
+  const addressBlocks = await getAddressBlocks(numberOfAddresses);
+  console.log('We got the provider');
   console.log(addressBlocks);
+  
   return '';
 }
 
