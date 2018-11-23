@@ -15,5 +15,10 @@
     "monitoring"
   ],
   "author": "Uros Damnjanovic",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "ethers": "^4.0.13",
+    "jest": "^23.6.0",
+    "web3": "^1.0.0-beta.36"
+  }
 }
