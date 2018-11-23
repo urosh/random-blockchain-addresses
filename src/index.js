@@ -20,13 +20,22 @@ const getAddressBlocks = (numberOfAddresses, currentBlock) => {
   }else {
     numberOfBlocks = Math.ceil(Math.random() * maxBlocks);
   }
-
-  const blocks = {};
-
-  for(let i = 0; i < numberOfBlocks; i++ ) {
-
+  console.log('Number of addresses and blocks', numberOfAddresses, numberOfBlocks);
+  // This should be a matrix, in which each block would have at least one address
+  const blocks = [];
+  let j = 0;
+  for(let i = numberOfBlocks; i > 0; i-- ) {
+    const limit = numberOfAddresses - numberOfBlocks > - 1 ? (numberOfAddresses - numberOfBlocks + 1) : 1;
+    blocks.push({
+      addressesPerBlock: Math.ceil(Math.random() * limit),
+      blockIndex : j
+    });
+    numberOfAddresses = numberOfAddresses - blocks[j].addressesPerBlock;
+    j++;
   }
-  console.log('Number of Blocks', numberOfBlocks);
+  blocks.map(block => block.blockIndex = currentBlock - Math.floor(Math.random() * blocksTreshold));
+
+  return blocks;
 }
 
 
@@ -51,6 +60,7 @@ const getAddresses = async (numberOfAddresses = defaultNumberOfAddresses, networ
   
   const addressBlocks = getAddressBlocks(numberOfAddresses, currentBlock);
   console.log('We got the provider', currentBlock);
+  console.log(addressBlocks);
   return '';
 }
 
