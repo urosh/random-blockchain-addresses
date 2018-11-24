@@ -38,6 +38,20 @@ const getAddressesPerBlocks = (numberOfAddresses, numberOfBlocks) => {
   return [...blocks];
 }
 
+const findBlock = async (numberOfTransactions, currentBlock) => {
+  return new Prosmise((resolve, reject) => {
+    let blockValid = false;
+    do{
+      const blockIndex = currentBlock - Math.floor(Math.random() * blocksTreshold);
+      const txs = await provider.getBlock(blockIndex);
+      blockValid = txs.transactions.length > numberOfTransactions;
+      resolve(blockIndex);
+    } while(!blockValid);
+
+  })
+}
+
+
 const getBlockIndexes = async (addressesPerBlock, currentBlock) => {
 
 }
@@ -53,7 +67,8 @@ const getAddressBlocks = async (numberOfAddresses, network) => {
 
     // Now i have to select block inedxes for each block
     // The block must have enough transactions
-  
+    const blockIndexes = getBlockIndexes(blocks.map(block => block.addressesPerBlock), currentBlock);
+
     blocks.map(async block => {
       do {
         // get number of transactions for given block and make sure we have enough
