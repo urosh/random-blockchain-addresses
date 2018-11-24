@@ -47,8 +47,19 @@ const getAddressesPerBlocks = (numberOfAddresses, numberOfBlocks) => {
   return [...blocks];
 }
 
+const getNRandomNumbers = (from, to, n) => {
+  const randomNumbers = [];
+  for(let i = 0; ; i < n) {
+    const rNumber = Math.random() * (to - from) + from;
+    if(randomNumber.indexOf(rNumber) === -1) {
+      randomNumbers.push(rNumber);
+      i++;
+    }
+  }
+}
+
 // TODO this should be more efficient and reliable
-const findBlock = async (numberOfTransactions, currentBlock) => {
+const findValidBlock = async (numberOfTransactions, currentBlock) => {
   return new Promise(async (resolve, reject) => {
     let blockValid = false;
     do{
@@ -57,9 +68,9 @@ const findBlock = async (numberOfTransactions, currentBlock) => {
         const txs = await provider.getBlock(blockIndex);
         blockValid = txs.transactions.length > numberOfTransactions;
         if(blockValid){
-          console.log('resolving');
+          getNRandomNumbers
+          // Ok here we know we are good
           resolve(blockIndex);
-          break;
         }
       }catch(e) {
         reject(e);
@@ -74,20 +85,16 @@ const findBlock = async (numberOfTransactions, currentBlock) => {
 const getBlockIndexes = async (blocks, currentBlock) => {
   const findBlockRequests = [];
   blocks.map(block => {
-    findBlockRequests.push(findBlock(block.addressesPerBlock, currentBlock));
+    findBlockRequests.push(findValidBlock(block.addressesPerBlock, currentBlock));
   });
   return Promise.all(findBlockRequests);
 }
-
-const getRandomTransactionsFromBlock = (blockNumber, numberOfAddresses) => {
-
-}
-
 
 const getAddressBlocks = async (numberOfAddresses, network) => {
   return new Promise(async (resolve, reject) => {
     const currentBlock = await provider.getBlockNumber();
     let numberOfBlocks = getNumberOfBlocks(numberOfAddresses);
+    
     console.log('Number of addresses and blocks', numberOfAddresses, numberOfBlocks);
     
     // This should be a matrix, in which each block would have at least one address
@@ -98,39 +105,12 @@ const getAddressBlocks = async (numberOfAddresses, network) => {
     const blockIndexes = await getBlockIndexes(blocks, currentBlock);
     blocks = mergeArrayToCollection(blockIndexes, blocks, 'blockIndex');
 
-    console.log('blockIndexes', blocks);
     console.log('blockIndexes', blockIndexes);
 
     return resolve(blocks);
   
-    console.log(blocks);
   })
 
-  
-
-
-  // for(let i = numberOfBlocks; i > 0; i-- ) {
-  //   const limit = numberOfAddresses - numberOfBlocks > - 1 ? (numberOfAddresses - numberOfBlocks + 1) : 1;
-  //   const numberOfAddressesInTheBlock = Math.ceil(Math.random() * limit);
-  //   numberOfAddresses = numberOfAddresses - numberOfAddressesInTheBlock;
-
-  //   blockIndex = currentBlock - Math.floor(Math.random() * blocksTreshold);
-  //   // For given blockIndex, check if we have enought transactions to get all the addresses. If not get another block.
-  //   blocks.push({
-  //     addressesPerBlock: Math.ceil(Math.random() * limit),
-  //     blockIndex : j
-  //   });
-  //   j++;
-  // }
-  // blocks.map(async block => {
-  //   block.blockIndex = currentBlock - Math.floor(Math.random() * blocksTreshold);
-  //   const txs = await provider.getBlock(block.blockIndex);
-  //   //console.log(txs.transactions);
-  //   return block;
-  // })
-  //blocks.map(block => block.blockIndex = currentBlock - Math.floor(Math.random() * blocksTreshold));
-  
-  
 }
 
 let provider;
@@ -145,7 +125,6 @@ const getAddresses =  async (numberOfAddresses = defaultNumberOfAddresses, netwo
   }
 
   provider = getProvider(network);
-  
 
   const addressBlocks = await getAddressBlocks(numberOfAddresses);
   console.log(addressBlocks);
@@ -153,29 +132,11 @@ const getAddresses =  async (numberOfAddresses = defaultNumberOfAddresses, netwo
   return '';
 }
 
-getAddresses(24, 'ropsten').then(d => {
-  console.log('we are done');
-})
+getAddresses(24, 'ropsten');
+
 module.exports = {
   getAddressBlocks,
   getAddresses,
   mergeArrayToCollection
 }
 
-// const random-blockchain-addresses = require('r-b-a);
-// rba.getAddresses({
-//
-//})
-/*
-rba.a
-rba.getAddresses({
-  numberOfAddresses: 10,
-  network: 'ropsten'
-})
-
-
-
-
-
-
-*/
