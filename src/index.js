@@ -21,6 +21,15 @@ const getNumberOfBlocks = numberOfAddresses => {
   return Math.ceil(Math.random() * maxBlocks);
 };
 
+const mergeArrayToCollection = (arr, coll, propertyName) => {
+  
+  const updatedColl = coll.map((collEl, i) => {
+    return {...collEl, ...{[propertyName]: arr[i]}};
+  })
+  return updatedColl;
+}
+
+
 const getAddressesPerBlocks = (numberOfAddresses, numberOfBlocks) => {
   const blocks = [];
 
@@ -38,50 +47,52 @@ const getAddressesPerBlocks = (numberOfAddresses, numberOfBlocks) => {
   return [...blocks];
 }
 
+// TODO this should be more efficient and reliable
 const findBlock = async (numberOfTransactions, currentBlock) => {
-  return new Prosmise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     let blockValid = false;
     do{
       const blockIndex = currentBlock - Math.floor(Math.random() * blocksTreshold);
-      const txs = await provider.getBlock(blockIndex);
-      blockValid = txs.transactions.length > numberOfTransactions;
-      resolve(blockIndex);
+      try{
+        const txs = await provider.getBlock(blockIndex);
+        blockValid = txs.transactions.length > numberOfTransactions;
+        resolve(blockIndex);
+      }catch(e) {
+        reject(e);
+        break;
+      }
     } while(!blockValid);
-
   })
 }
 
 
-const getBlockIndexes = async (addressesPerBlock, currentBlock) => {
-
+const getBlockIndexes = async (blocks, currentBlock) => {
+  const findBlockRequests = [];
+  blocks.map(block => {
+    findBlockRequests.push(findBlock(block.addressesPerBlock, currentBlock));
+  });
+  return Promise.all(findBlockRequests);
 }
 
+
+
 const getAddressBlocks = async (numberOfAddresses, network) => {
-  const provider = getProvider(network);
   return new Promise(async (resolve, reject) => {
     const currentBlock = await provider.getBlockNumber();
     let numberOfBlocks = getNumberOfBlocks(numberOfAddresses);
     console.log('Number of addresses and blocks', numberOfAddresses, numberOfBlocks);
+    
     // This should be a matrix, in which each block would have at least one address
-    const blocks = getAddressesPerBlocks(numberOfAddresses, numberOfBlocks);
+    let blocks = getAddressesPerBlocks(numberOfAddresses, numberOfBlocks);
 
     // Now i have to select block inedxes for each block
     // The block must have enough transactions
-    const blockIndexes = getBlockIndexes(blocks.map(block => block.addressesPerBlock), currentBlock);
+    const blockIndexes = await getBlockIndexes(blocks, currentBlock);
+    blocks = mergeArrayToCollection(blockIndexes, blocks, 'blockIndex');
 
-    blocks.map(async block => {
-      do {
-        // get number of transactions for given block and make sure we have enough
-        const blockIndex = currentBlock - Math.floor(Math.random() * blocksTreshold);
-        const txs = await provider.getBlock(blockIndex);
-        console.log('We were here');
-        if(txs.transactions.length >= block.addressesPerBlock) {
-          console.log('Adding');
-          block.blockIndex = blockIndex;
-        }
-      } while(!block.blockIndex)
-      return block;
-    });
+    console.log('blockIndexes', blocks);
+    console.log('blockIndexes', blockIndexes);
+
     return resolve(blocks);
   
     console.log(blocks);
@@ -114,6 +125,7 @@ const getAddressBlocks = async (numberOfAddresses, network) => {
   
 }
 
+let provider;
 
 const getAddresses =  async (numberOfAddresses = defaultNumberOfAddresses, network = 'ropsten') => {
   if(typeof numberOfAddresses !== 'number' && isNaN(Number(numberOfAddresses))) {
@@ -124,7 +136,8 @@ const getAddresses =  async (numberOfAddresses = defaultNumberOfAddresses, netwo
     network = 'ropsten';
   }
 
-  const provider = getProvider(network);
+  provider = getProvider(network);
+  
 
   const addressBlocks = await getAddressBlocks(numberOfAddresses);
   console.log(addressBlocks);
@@ -137,7 +150,8 @@ getAddresses(24, 'ropsten').then(d => {
 })
 module.exports = {
   getAddressBlocks,
-  getAddresses
+  getAddresses,
+  mergeArrayToCollection
 }
 
 // const random-blockchain-addresses = require('r-b-a);

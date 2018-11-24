@@ -8,9 +8,20 @@ describe('Generating number of addresses per block',  () => {
     const numberOfAddressesInResponse = blocks.reduce((curr, next) => {
       return curr + next.addressesPerBlock
     }, 0);
-    console.log(blocks);
-    console.log(numberOfAddressesInResponse);
 
     expect(numberOfAddressesInResponse).toBe(numberOfAddresses);
   })
 });
+
+
+
+describe('Merge array to collection', () => {
+  test('Basic functionality', () => {
+    const arr = ['1', '2', '3', '4'];
+    const coll = [{a: 'test'}, {b: 'test'}, {c: 'test'}];
+    const result = randomAddressGenerator.mergeArrayToCollection(arr, coll, 'test');
+    console.log(result);
+    expect(result.length).toBe(3);  
+  })
+})
+
