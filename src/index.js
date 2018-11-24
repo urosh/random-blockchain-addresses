@@ -56,12 +56,17 @@ const findBlock = async (numberOfTransactions, currentBlock) => {
       try{
         const txs = await provider.getBlock(blockIndex);
         blockValid = txs.transactions.length > numberOfTransactions;
-        resolve(blockIndex);
+        if(blockValid){
+          console.log('resolving');
+          resolve(blockIndex);
+          break;
+        }
       }catch(e) {
         reject(e);
         break;
       }
     } while(!blockValid);
+
   })
 }
 
@@ -74,6 +79,9 @@ const getBlockIndexes = async (blocks, currentBlock) => {
   return Promise.all(findBlockRequests);
 }
 
+const getRandomTransactionsFromBlock = (blockNumber, numberOfAddresses) => {
+
+}
 
 
 const getAddressBlocks = async (numberOfAddresses, network) => {

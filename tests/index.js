@@ -1,7 +1,7 @@
 const randomAddressGenerator = require('../src/index');
 
 
-describe('Generating number of addresses per block',  () => {
+describe('Generating number of addresses per block',  async () => {
   test('Number of blocks', async () => {
     const numberOfAddresses = 14;
     const blocks = await randomAddressGenerator.getAddressBlocks(numberOfAddresses, 'ropsten');
