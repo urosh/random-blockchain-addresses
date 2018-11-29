@@ -19,7 +19,7 @@ const getNumberOfBlocks = numberOfAddresses => {
     return 1;
   }
 
-  return Math.floor(numberOfAddresses / estimatedNumberOfTransactionsPerBlock);
+  return Math.ceil(numberOfAddresses / estimatedNumberOfTransactionsPerBlock);
 };
 
 const mergeArrayToCollection = (arr, coll, propertyName) => {
@@ -154,6 +154,54 @@ const getRandomAddresses = numberOfAddresses => {
 
   })
 }
+
+
+
+
+const getValidBlock = async () => {
+  return new Promise(async resolve => {
+    const currentBlock = await provider.getBlockNumber();
+    const findBlock = async () => {
+      const blockIndex = Math.floor(Math.random() * blocksTreshold);
+      const block = await provider.getBlock(currentBlock - blockIndex, true);
+      if(block.transactions.length > estimatedNumberOfTransactionsPerBlock) {
+        return resolve(block);
+      }
+      findBlock();
+    }
+
+    findBlock();
+  })
+}
+
+const search = (numberOfAddresses) => {
+  const result = [];
+  return new Promise(async resolve => {
+    const addTransactions = async () => {
+      const block = await getValidBlock();
+      block.transactions.map(tx => {
+        //console.log(tx.to, tx.from);
+        if(tx.to && result.indexOf(tx.to) === -1 && result.length < numberOfAddresses) {
+          result.push(tx.to);
+        }
+        
+        if(tx.from && result.indexOf(tx.from) === -1 && result.length < numberOfAddresses) {
+          result.push(tx.from);
+        }
+      })
+
+      if(result.length === numberOfAddresses) {
+        return resolve(result);
+      }
+      addTransactions();
+    }
+
+    addTransactions();
+  })
+
+  
+}
+
 const getAddresses =  async (numberOfAddresses = defaultNumberOfAddresses, network = 'ropsten') => {
   if(typeof numberOfAddresses !== 'number' && isNaN(Number(numberOfAddresses))) {
     numberOfAddresses = defaultNumberOfAddresses;
@@ -170,6 +218,11 @@ const getAddresses =  async (numberOfAddresses = defaultNumberOfAddresses, netwo
   console.log('Starting');
   //const addresses = await getRandomAddresses(numberOfAddresses);
   const numberOfBlocks = getNumberOfBlocks(numberOfAddresses);
+  const result = await search(numberOfAddresses);
+  console.log(result);
+  //const block = await getValidBlock();
+  //console.log(block);
+  // for each block find appropriate number of transactions
   console.log('Number of Blocks', numberOfBlocks);
   //console.log(addresses);
   

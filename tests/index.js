@@ -31,7 +31,7 @@ describe('Choosing number of blocks logic', () => {
   test('Number of blocks', () => {
     let numberOfAddresses = 133;
     let numberOfBlocks = randomAddressGenerator.getNumberOfBlocks(numberOfAddresses);
-    expect(numberOfBlocks).toBe(Math.floor(numberOfAddresses / estimatedNumberOfTransactionsPerBlock));
+    expect(numberOfBlocks).toBe(Math.ceil(numberOfAddresses / estimatedNumberOfTransactionsPerBlock));
     
     numberOfAddresses = 1;
     numberOfBlocks = randomAddressGenerator.getNumberOfBlocks(numberOfAddresses);
@@ -43,4 +43,6 @@ describe('Choosing number of blocks logic', () => {
 
   })
 })
+
+
 
