@@ -1,4 +1,5 @@
 const randomAddressGenerator = require('../src/index');
+const estimatedNumberOfTransactionsPerBlock = 10;
 
 
 describe('Generating number of addresses per block',  async () => {
@@ -22,6 +23,24 @@ describe('Merge array to collection', () => {
     const result = randomAddressGenerator.mergeArrayToCollection(arr, coll, 'test');
     console.log(result);
     expect(result.length).toBe(3);  
+  })
+})
+
+
+describe('Choosing number of blocks logic', () => {
+  test('Number of blocks', () => {
+    let numberOfAddresses = 133;
+    let numberOfBlocks = randomAddressGenerator.getNumberOfBlocks(numberOfAddresses);
+    expect(numberOfBlocks).toBe(Math.floor(numberOfAddresses / estimatedNumberOfTransactionsPerBlock));
+    
+    numberOfAddresses = 1;
+    numberOfBlocks = randomAddressGenerator.getNumberOfBlocks(numberOfAddresses);
+    expect(numberOfBlocks).toBe(1);
+    
+    numberOfAddresses = 8;
+    numberOfBlocks = randomAddressGenerator.getNumberOfBlocks(numberOfAddresses);
+    expect(numberOfBlocks).toBe(1);
+
   })
 })
 

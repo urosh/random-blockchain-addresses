@@ -2,8 +2,8 @@ const ethers = require('ethers');
 
 const providerList = ['homestead', 'rinkeby', 'ropsten', 'kovan'];
 const defaultNumberOfAddresses = 10;
-const maxBlocks = 10;
 const blocksTreshold = 1000;
+const estimatedNumberOfTransactionsPerBlock = 10;
 
 const getProvider = network => {
   if(!network || providerList.indexOf(network) === -1) {
@@ -13,12 +13,13 @@ const getProvider = network => {
   return ethers.getDefaultProvider(network);
 }
 
+// There is a number of transactions per block that needs to be taken into consideration
 const getNumberOfBlocks = numberOfAddresses => {
-  if(numberOfAddresses < maxBlocks) {
-    return  numberOfAddresses;
+  if(numberOfAddresses <= estimatedNumberOfTransactionsPerBlock) {
+    return 1;
   }
 
-  return Math.ceil(Math.random() * maxBlocks);
+  return Math.floor(numberOfAddresses / estimatedNumberOfTransactionsPerBlock);
 };
 
 const mergeArrayToCollection = (arr, coll, propertyName) => {
@@ -68,7 +69,10 @@ const findValidBlock = async (numberOfTransactions, currentBlock) => {
         const txs = await provider.getBlock(blockIndex);
         blockValid = txs.transactions.length > numberOfTransactions;
         if(blockValid){
-          getNRandomNumbers
+          // For a given block we need to generate array of indexes for which we are going to 
+          // access transactions
+          //const txIndexes = getNRandomNumbers(0, txs.transactions.length, n);
+          //rxIndexes.map()
           // Ok here we know we are good
           resolve(blockIndex);
         }
@@ -114,7 +118,42 @@ const getAddressBlocks = async (numberOfAddresses, network) => {
 }
 
 let provider;
+const getTransaction = (currentBlock, blocksTreshold) => {
+  return new Promise(resolve => {
+    
+    const findTransaction = async () => {
+      const blockIndex = Math.floor(Math.random() * blocksTreshold);
+      const blockData = await provider.getBlock(currentBlock - blockIndex);
+      
+      if(blockData.transactions.length > 0) {
+        console.log('Block index', blockIndex);
+        const block = await provider.getBlock(currentBlock - blockIndex, true);
+        console.log(block.transactions);
+        const transaction = await provider.getTransaction(blockData.transactions[Math.floor(Math.random() * blockData.transactions.length)])
+        resolve(transaction.to || transaction.from);
+      }else{
+        findTransaction()
+      }
+    }
 
+    return findTransaction();
+
+  })
+}
+const getRandomAddresses = numberOfAddresses => {
+  // Get Random block number
+  
+  return new Promise(async (resolve, reject) => {
+    const currentBlock = await provider.getBlockNumber();
+    const response = [];
+    for(let i = 0; i < numberOfAddresses; i++) {
+      const tx = await getTransaction(currentBlock, blocksTreshold);
+      response.push(tx);
+    }
+    resolve(response);
+
+  })
+}
 const getAddresses =  async (numberOfAddresses = defaultNumberOfAddresses, network = 'ropsten') => {
   if(typeof numberOfAddresses !== 'number' && isNaN(Number(numberOfAddresses))) {
     numberOfAddresses = defaultNumberOfAddresses;
@@ -126,17 +165,23 @@ const getAddresses =  async (numberOfAddresses = defaultNumberOfAddresses, netwo
 
   provider = getProvider(network);
 
-  const addressBlocks = await getAddressBlocks(numberOfAddresses);
-  console.log(addressBlocks);
+  
+  //const addressBlocks = await getAddressBlocks(numberOfAddresses);
+  console.log('Starting');
+  //const addresses = await getRandomAddresses(numberOfAddresses);
+  const numberOfBlocks = getNumberOfBlocks(numberOfAddresses);
+  console.log('Number of Blocks', numberOfBlocks);
+  //console.log(addresses);
   
   return '';
 }
 
-getAddresses(24, 'ropsten');
+getAddresses(22, 'ropsten');
 
 module.exports = {
   getAddressBlocks,
   getAddresses,
-  mergeArrayToCollection
+  mergeArrayToCollection,
+  getNumberOfBlocks
 }
 
