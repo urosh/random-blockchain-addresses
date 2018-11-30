@@ -25,7 +25,7 @@ const getValidBlock = async () => {
       findBlock();
     }
 
-    findBlock();
+    return findBlock();
   })
 }
 
@@ -48,11 +48,11 @@ const search = (numberOfAddresses) => {
       if(result.length === numberOfAddresses) {
         return resolve(result);
       }
-      
+
       addTransactions();
     }
 
-    addTransactions();
+    return addTransactions();
   });
 
 }
@@ -68,13 +68,12 @@ const getAddresses =  async (numberOfAddresses = defaultNumberOfAddresses, netwo
 
   provider = getProvider(network);
   const result = await search(numberOfAddresses);
-  console.log(result);
   
   return result;
 }
 
 
-getAddresses(122, 'ropsten');
+//getAddresses(22, 'ropsten');
 
 module.exports = {
   getAddresses
