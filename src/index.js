@@ -14,7 +14,7 @@ const getProvider = network => {
 }
 
 const getValidBlock = async () => {
-  return new Promise(async resolve => {
+  return new Promise(async (resolve) => {
     const currentBlock = await provider.getBlockNumber();
     const findBlock = async () => {
       const blockIndex = Math.floor(Math.random() * blocksTreshold);
@@ -48,13 +48,13 @@ const search = (numberOfAddresses) => {
       if(result.length === numberOfAddresses) {
         return resolve(result);
       }
+      
       addTransactions();
     }
 
     addTransactions();
-  })
+  });
 
-  
 }
 
 const getAddresses =  async (numberOfAddresses = defaultNumberOfAddresses, network = 'ropsten') => {
@@ -69,6 +69,7 @@ const getAddresses =  async (numberOfAddresses = defaultNumberOfAddresses, netwo
   provider = getProvider(network);
   const result = await search(numberOfAddresses);
   console.log(result);
+  
   return result;
 }
 
