@@ -1,6 +1,6 @@
 {
   "name": "random-blockchain-addresses",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Retrieve random addresses from ethereum network.",
   "main": "src/index.js",
   "scripts": {
