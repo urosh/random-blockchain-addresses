@@ -40,6 +40,22 @@ describe('Module returns array of unique addresses', async () => {
   
 });
 
+describe('Handling incorrect inputs', async () => {
+  jest.setTimeout(30000);
+  test('correct number of addresses handling', async () => {
+    const response = await randomAddressGenerator.getAddresses(-1, 'ropsten');
+    expect(response.length).toBe(0);
+  })
+
+  test('correct provider handling', async () => {
+    const response = await randomAddressGenerator.getAddresses(10, 'test');
+    expect(response.length).toBe(10);
+    let arrayUnique = checkIfUniqueArray(response);
+    expect(arrayUnique).toBe(true);
+  })
+
+});
+
 // describe('Module returns correct number of addresses', async () => {
 
 // });

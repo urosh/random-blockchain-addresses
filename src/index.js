@@ -59,7 +59,11 @@ const search = (numberOfAddresses) => {
 
 const getAddresses =  async (numberOfAddresses = defaultNumberOfAddresses, network = 'ropsten') => {
   if(typeof numberOfAddresses !== 'number' && isNaN(Number(numberOfAddresses))) {
-    numberOfAddresses = defaultNumberOfAddresses;
+    return [];
+  }
+
+  if(numberOfAddresses < 0) {
+    return [];
   }
 
   if(!network) {
@@ -71,9 +75,6 @@ const getAddresses =  async (numberOfAddresses = defaultNumberOfAddresses, netwo
   
   return result;
 }
-
-
-//getAddresses(22, 'ropsten');
 
 module.exports = {
   getAddresses
